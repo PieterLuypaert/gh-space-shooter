@@ -54,6 +54,12 @@ filename = "pyproject.toml"
 search = "version = \"{current_version}\""
 replace = "version = \"{new_version}\""
 
+[tool.uv.workspace]
+members = ["app"]
+
+[tool.uv.sources]
+gh-space-shooter = { workspace = true }
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Space Shooter</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0d1117;
+            color: #c9d1d9;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            color: #58a6ff;
+        }
+
+        .subtitle {
+            color: #8b949e;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            padding: 2rem;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #c9d1d9;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            color: #c9d1d9;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #58a6ff;
+            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.3);
+        }
+
+        button {
+            width: 100%;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            background: #238636;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:hover:not(:disabled) {
+            background: #2ea043;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .result {
+            margin-top: 2rem;
+            text-align: center;
+        }
+
+        .loading {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            padding: 2rem;
+            color: #8b949e;
+        }
+
+        .loading.active {
+            display: flex;
+        }
+
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid #30363d;
+            border-top-color: #58a6ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .gif-container {
+            display: none;
+            margin-top: 1rem;
+        }
+
+        .gif-container.active {
+            display: block;
+        }
+
+        .gif-container img {
+            max-width: 100%;
+            border-radius: 8px;
+            border: 1px solid #30363d;
+        }
+
+        .error {
+            display: none;
+            background: #3d1f1f;
+            border: 1px solid #f85149;
+            color: #f85149;
+            padding: 1rem;
+            border-radius: 6px;
+            margin-top: 1rem;
+        }
+
+        .error.active {
+            display: block;
+        }
+
+        .download-link {
+            display: inline-block;
+            margin-top: 1rem;
+            color: #58a6ff;
+            text-decoration: none;
+        }
+
+        .download-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <h1>GitHub Space Shooter</h1>
+    <p class="subtitle">Turn your contribution graph into a space shooter GIF</p>
+
+    <div class="card">
+        <form id="generateForm">
+            <div class="form-group">
+                <label for="username">GitHub Username</label>
+                <input type="text" id="username" name="username" placeholder="octocat" required>
+            </div>
+
+            <div class="form-group">
+                <label for="strategy">Animation Strategy</label>
+                <select id="strategy" name="strategy">
+                    <option value="random">Random</option>
+                    <option value="column">Column (Left to Right)</option>
+                    <option value="row">Row (Top to Bottom)</option>
+                </select>
+            </div>
+
+            <button type="submit" id="submitBtn">Generate GIF</button>
+        </form>
+
+        <div class="result">
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <span>Generating your GIF... This may take a moment.</span>
+            </div>
+
+            <div class="error" id="error"></div>
+
+            <div class="gif-container" id="gifContainer">
+                <img id="gifImage" alt="Space Shooter GIF">
+                <br>
+                <a id="downloadLink" class="download-link" download>Download GIF</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('generateForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const loading = document.getElementById('loading');
+        const error = document.getElementById('error');
+        const gifContainer = document.getElementById('gifContainer');
+        const gifImage = document.getElementById('gifImage');
+        const downloadLink = document.getElementById('downloadLink');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const username = document.getElementById('username').value.trim();
+            const strategy = document.getElementById('strategy').value;
+
+            if (!username) return;
+
+            // Reset state
+            error.classList.remove('active');
+            gifContainer.classList.remove('active');
+            loading.classList.add('active');
+            submitBtn.disabled = true;
+
+            try {
+                const response = await fetch(`/api/generate?username=${encodeURIComponent(username)}&strategy=${encodeURIComponent(strategy)}`);
+
+                if (!response.ok) {
+                    const data = await response.json();
+                    throw new Error(data.detail || 'Failed to generate GIF');
+                }
+
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+
+                gifImage.src = url;
+                downloadLink.href = url;
+                downloadLink.download = `${username}-space-shooter.gif`;
+                gifContainer.classList.add('active');
+            } catch (err) {
+                error.textContent = err.message;
+                error.classList.add('active');
+            } finally {
+                loading.classList.remove('active');
+                submitBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

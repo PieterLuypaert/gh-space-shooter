@@ -1,0 +1,12 @@
+[project]
+name = "app"
+version = "0.1.0"
+description = "Web app for gh-space-shooter GIF generation"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "gh-space-shooter",
+    "fastapi[standard]>=0.115.0",
+    "uvicorn[standard]>=0.30.0",
+    "jinja2>=3.1.0",
+]
