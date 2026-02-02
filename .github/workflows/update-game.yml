@@ -2,7 +2,7 @@ name: Update Space Shooter Game
 
 on:
   schedule:
-    - cron: "0 0 * * *" # Daily at midnight UTC
+    - cron: "0 * * * *" # Hourly
   workflow_dispatch: # Allow manual trigger
 
 permissions:
@@ -19,4 +19,3 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           output-path: "game.gif"
           strategy: "random"
-
