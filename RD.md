@@ -4,8 +4,6 @@ Fullstack developer
 
 ![My Space Shooter](https://github.com/PieterLuypaert/gh-space-shooter/blob/main/game.gif?raw=true)
 
-![Snake Animation](https://github.com/PieterLuypaert/gh-space-shooter/raw/output/github-contribution-grid-snake-dark.svg)
-
 ## Tech Stack
 
 ### **Frontend**
